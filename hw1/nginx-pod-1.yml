@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-1
+  labels:
+    app: nginx
+    cache: redis
+spec:
+  containers:
+  - name: nginx-server
+    image: nginx
+    command: ["/bin/bash", "-c", "echo 'account is '$(SECRET_ACCOUNT) >> /usr/share/nginx/html/index.html && nginx -g 'daemon off;' "]
+    volumeMounts:
+    - name: secret-volume
+      mountPath: /etc/secret
+      readOnly: true
+    env:
+    - name: SECRET_ACCOUNT
+      valueFrom:
+        secretKeyRef:
+          name: secret-acc
+          key: account
+  - name: redis-server
+    image: redis
+  volumes:
+  - name: secret-volume
+    secret:
+      secretName: secret-acc
+      items:
+      - key: account
+        path: my-group/my-account
